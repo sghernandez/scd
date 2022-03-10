@@ -1,0 +1,5 @@
+#dataTable_filter{display: none !important}
+.hide_filter .dataTables_filter { display: none; }
+.error{color: #843534; }
+.error_input { background-color: #FCD4D9; }
+.deshabilitado{ background-color: #F9F9F9; }
