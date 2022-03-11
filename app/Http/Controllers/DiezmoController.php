@@ -22,11 +22,17 @@ class DiezmoController extends Controller
 
         if ($request->ajax()) 
         {
-            $rq = $request->all()['columns'];
+            $r_request = $request->all();
+            $rq = $r_request['columns'];
+            $o_order = $r_request['order'];
                 
             $inicio = $rq[1]['search']['value'];
             $limite = $rq[2]['search']['value'];
             $user_id = $rq[3]['search']['value'];
+
+            $orderCol = isset($o_order[0]['column']) ? $o_order[0]['column'] : '';
+            $col = isset($columns_datatables[$orderCol]) ? $columns_datatables[$orderCol] : 'fecha';
+            $dir = isset($o_order[0]['dir']) ? strtoupper($o_order[0]['dir']) : 'DESC';               
 
             if(! Util::userHasRole('super-admin')) { $user_id = auth()->user()->id; }
 
@@ -36,21 +42,22 @@ class DiezmoController extends Controller
                 ->when($limite, function($query) use ($limite) { $query->where('fecha', '<=', $limite); })              
                 ->when($user_id, function($query) use ($user_id) { $query->where('users.id', $user_id); })                           
                 ->join('users', 'diezmos.user_id', '=', 'users.id')       
-                ->orderBy('fecha', 'DESC');                 
+                ->orderBy($col, $dir);                 
 
             return DataTables::of($diezmos) // ->addIndexColumn()
                     ->addColumn('name', function($row){
                         return $row->name. ' '. $row->lastname;
                     })  
-                    ->addColumn('document', function($row){
+                    ->addColumn('document', function($row) {
                         return $row->document;
-                    })                         
+                    })                                             
                     ->addColumn('entregado', function($row){ return $row->entregado ? 'Sí' : 'No'; })                        
                     ->addColumn('action', function($row){                        
                         $fn_edit = "carga_modal('" . route('diezmos.edit', $row->id) . "')";
                         return '<div align="center"><span onclick="' . $fn_edit . '" class="btn btn-info btn-xs"><i class="fa fa-edit"></i></span></div>';        
                     })
                     ->rawColumns(['action'])
+                    // ->orderColumn('id', 'fecha', 'name', 'document', 'diezmo', 'ofrenda', 'entregado $1')
                     ->make(true);
         }                       
         

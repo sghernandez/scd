@@ -30,8 +30,15 @@ class UserController extends Controller
         if ($request->ajax()) 
         {          
             $j = 0;
-            $search = trim($request->all()['columns'][1]['search']['value']);        
+            $search = trim($request->all()['columns'][1]['search']['value']);     
+            $o_order = $request->order;
+         
+            $orderCol = isset($o_order[0]['column']) ? $o_order[0]['column'] : '';
+            $col = isset($columns_datatables[$orderCol]) ? $columns_datatables[$orderCol] : 'name';
+            $dir = isset($o_order[0]['dir']) ? strtoupper($o_order[0]['dir']) : 'ASC';              
+
             $query = User::query();
+            $query->orderBy($col, $dir);
 
             if($search)
             {
